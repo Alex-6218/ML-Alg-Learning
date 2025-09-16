@@ -14,7 +14,6 @@ for i in range(100):
     sampley = np.append(sampley, sum([real_coeffs[j]*(samplex[i]**j) for j in range(len(real_coeffs))]) + 2*np.random.rand()*p - p)
 
 dataset = np.column_stack((samplex, sampley))
-2
 
 plt.scatter(samplex, sampley, label='Random Data Points', color='blue')
 plt.ion()
@@ -40,7 +39,7 @@ def poly_cost(prediction):
         cost += squared_error
     return cost / len(dataset)
 
-def roc_coeffn(n):
+def gradient_coefficient(n):
     global coeffs
     d_coeffn = 0
     for i in range(len(dataset)):
@@ -63,7 +62,7 @@ def poly_descent():
     line, = plt.plot(sorted_samplex, sorted_y_fit, label='Best Fit Line', color='orange', linestyle='--')
     plt.show(block=False)
     while abs(d_error) > 0.000001:
-        new_coeffs = coeffs - learn_rate * np.array([roc_coeffn(i) for i in range(len(coeffs))])
+        new_coeffs = coeffs - learn_rate * np.array([gradient_coefficient(i) for i in range(len(coeffs))])
         y_pred_old = [sum([coeffs[i]*(dataset[x][0]**i) for i in range(len(coeffs))]) for x in range(len(dataset))]
         y_pred_new = [sum([new_coeffs[i]*(dataset[x][0]**i) for i in range(len(new_coeffs))]) for x in range(len(dataset))]
         d_error = poly_cost(y_pred_old) - poly_cost(y_pred_new)

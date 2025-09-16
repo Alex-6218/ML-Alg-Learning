@@ -5,13 +5,8 @@ import sys
 samplex = np.array([])
 sampley = np.array([])
 
-# degree = int(input("Degree:"))
-# real_coeffs = [np.random.rand()*2 - 1 for _ in range(degree+1)]
-correlation = p = 0.05  # 0 no correlation, 1 perfect correlation
 
-# for i in range(100):
-#     samplex = np.append(samplex, np.random.rand())
-#     sampley = np.append(sampley, sum([real_coeffs[j]*(samplex[i]**j) for j in range(len(real_coeffs))]) + 2*np.random.rand()*p - p)
+correlation = p = 0.05  # 0 no correlation, 1 perfect correlation
 
 
 real_slope = np.random.rand()*2 - 1
@@ -22,12 +17,11 @@ for i in range(100):
 
 dataset = np.column_stack((samplex, sampley))
 
-# coeff1 = (dataset[0][1] - dataset[1][1])/(dataset[0][0] - dataset[1][0])
-# coeff0 = dataset[0][1]-dataset[0][0]*coeff1 
+
 coeff0 = 0
 coeff1 = 0
 
-# coeffs = np.zeros(degree+1)
+
 d_error = 2
 
 
@@ -42,16 +36,7 @@ def mse_cost(m,b):
         cost += squared_error
     return cost / len(dataset) 
 
-# def poly_cost(prediction):
-#     cost = 0
-#     for i in range(len(dataset)):
-#         y = dataset[i][1]
-#         error = prediction[i] - y
-#         squared_error = error ** 2
-#         cost += squared_error
-#     return cost / len(dataset)
-
-def roc_coeff0():
+def gradient_intercept():
     global coeff0, coeff1
     d_coeff0 = 0
     for i in range(len(dataset)):
@@ -60,7 +45,7 @@ def roc_coeff0():
         d_coeff0 += y-(coeff0+coeff1*x)
     return -2 * d_coeff0 / len(dataset)
 
-def roc_coeff1():
+def gradient_slope():
     global coeff0, coeff1
     d_coeff1 = 0
     for i in range(len(dataset)):
@@ -69,21 +54,10 @@ def roc_coeff1():
         d_coeff1 += (y-(coeff0+coeff1*x)) * x
     return -2 * d_coeff1 / len(dataset)
 
-# def roc_coeffn(n):
-#     global coeffs
-#     d_coeffn = 0
-#     for i in range(len(dataset)):
-#         x = dataset[i][0]
-#         y = dataset[i][1]
-#         d_coeffn += (y - sum([coeffs[j] * (x ** j) for j in range(len(coeffs))])) * (x ** n)
-#     return -2 * d_coeffn / len(dataset)
-
-# y-coeffs[n]*x^n + ... + y-coeffs[1]*x + y-coeffs[0]
-#y-coeffs[n]*x
 
 plt.scatter(samplex, sampley, label='Random Data Points', color='blue')
 plt.ion()
-plt.title('Polynomial Fit to Random Data')  
+plt.title('Linear Fit to Random Data')  
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
 plt.legend()
@@ -95,8 +69,8 @@ def grad_descent():
     line, = plt.plot(samplex, coeff1*samplex+coeff0, label='Best Fit Line', color='orange', linestyle='--')
     plt.show(block=False)
     while d_error > 0.000001 or d_error < -0.000001:
-        new_coeff0 = coeff0 - learn_rate * roc_coeff0()
-        new_coeff1 = coeff1 - learn_rate * roc_coeff1()
+        new_coeff0 = coeff0 - learn_rate * gradient_intercept()
+        new_coeff1 = coeff1 - learn_rate * gradient_slope()
         d_error = mse_cost(coeff1, coeff0) - mse_cost(new_coeff1, new_coeff0)
         coeff0 = new_coeff0
         coeff1 = new_coeff1
@@ -108,26 +82,7 @@ def grad_descent():
         print(f"Coeff1: {coeff1}")
         print(f"d_Cost: {d_error}")
         sys.stdout.flush()
-        print("\033[4A", end='')  # Move cursor up 4 lines
-
-# def poly_descent():
-#     global coeffs, d_error
-#     learn_rate = 0.1
-#     line, = plt.plot(samplex, sum([coeffs[i]*(samplex**i) for i in range(len(coeffs))]), label='Best Fit Line', color='orange', linestyle='--')
-#     plt.show(block=False)
-#     while d_error > 0.000001 or d_error < -0.000001:
-#         new_coeffs = coeffs - learn_rate * np.array([roc_coeffn(i) for i in range(len(coeffs))])
-#         d_error = poly_cost([sum([coeffs[i]*(x**i) for i in range(len(coeffs))]) for x in range(len(dataset))]) - poly_cost([sum([new_coeffs[i]*(x**i) for i in range(len(new_coeffs))]) for x in range(len(dataset))])
-#         coeffs = new_coeffs
-#         line.set_ydata([sum([coeffs[i]*(samplex**i) for i in range(len(coeffs))])])
-#         plt.pause(0.01)  # This updates the plot
-
-#         for i in range(len(coeffs)):
-#             print(f"Coeff{i}: {coeffs[i]}")
-#         print(f"Cost: {poly_cost([sum([coeffs[i]*(x**i) for i in range(len(coeffs))]) for x in range(len(dataset))])}")
-#         print(f"d_Cost: {d_error}")
-#         sys.stdout.flush()
-#         print("\033[{}A".format(len(coeffs)+2), end='')  # Move cursor up len(coeffs)+2 lines
+        print("\033[4A]", end='')  # Move cursor up 4 lines
 
 
 print("\033c", end="")
