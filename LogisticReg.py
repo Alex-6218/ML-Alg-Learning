@@ -1,3 +1,6 @@
+#Current Goals: figure out how to strcuture data array, implement generation of that structure using a sigmoid function or other random spread method, 
+# and reimplement sigmoid(), cost(), deltax0(), and deltak() with new structure in mind. 
+
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -12,7 +15,7 @@ def generate_data(datasize=int(input("Enter the size of the dataset: ")),
                   xmax = float(input("Enter the upper bound of the data: "))):
     global data
     x = np.linspace(xmin, xmax, datasize)
-    data = np.linspace(datasize)
+    data = np.linspace(xmin, xmax, datasize)
     probabilities = np.reciprocal(1+np.exp(-truek*(x-truex0)))
     for i in range(1, datasize):
         # transition probability based on sigmoid, but weighted by previous state
