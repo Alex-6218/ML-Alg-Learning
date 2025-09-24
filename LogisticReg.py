@@ -36,7 +36,7 @@ def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
 generate_data(40, 0.1, 0, -10, 10)
 print(f"Data: {data}")
 
-plt.scatter(np.array([(xmax + i/(len(data)-1)*(xmax-xmin)) for i in range(len(data))]), data, label='Random Data Points', color='blue')
+plt.scatter(np.array([(i/(len(data)-1)*(xmax-xmin)) for i in range(len(data))]), data, label='Random Data Points', color='blue')
 plt.ion()
 plt.title('Logistic fit to random data')  
 plt.xlabel('X-axis')
@@ -46,7 +46,7 @@ plt.grid(True)
 
 
 def sigmoid(i, k, x0):
-    xterm = (xmax + i/(len(data)-1)*(xmax-xmin))-x0
+    xterm = (xmin + i/(len(data)-1)*(xmax-xmin))-x0
     prediction = np.reciprocal(1 + np.exp(-k * xterm))
     return prediction
 
@@ -72,7 +72,7 @@ def deltak():
 def deltax0():
     dx0 = 0
     for j in range(len(data)):
-        xterm = (xmax + j/(len(data)-1)*(xmax-xmin))
+        xterm = (xmin + j/(len(data)-1)*(xmax-xmin))
         dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*xterm) #check math
     return 2*dx0/len(data)
 
