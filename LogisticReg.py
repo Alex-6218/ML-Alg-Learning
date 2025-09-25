@@ -33,7 +33,7 @@ def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
     return data
 
 
-generate_data(40, 0.4, 0, -10, 10)
+generate_data(40, 0.4, 7, -10, 10)
 print(f"Data: {data}")
 
 plt.scatter(xs, data, label='Random Data Points', color='blue')
@@ -62,6 +62,7 @@ print("Initial Cost: " + str(initialCost))
 
 
 def deltak():
+    # return 0
     dk = 0
     for j in range(len(data)):
         
@@ -69,6 +70,7 @@ def deltak():
     return -2*dk/len(data)
 
 def deltax0():
+    # return 0
     dx0 = 0
     for j in range(len(data)):
         dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*(xs[j]-x0)) #check math
@@ -76,7 +78,8 @@ def deltax0():
 
 def grad_descent():
     global k, x0
-    learn_rate = 0.0001
+    learnRateK = 0.00001
+    learnRateX0 = 0.1
     dcost = 1
 
     #Creating best-fit line
@@ -84,10 +87,10 @@ def grad_descent():
 
     line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
     while np.abs(dcost) > 1e-6:
-        newk = k - learn_rate * deltak()
-        newx0 = x0 - learn_rate * deltax0()
-        dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newk, newx0) for i in range(len(data))]), data)
-        k, x0 = newk, newx0
+        newK = k - learnRateK * deltak()
+        newX0 = x0 - learnRateX0 * deltax0()
+        dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newK, newX0) for i in range(len(data))]), data)
+        k, x0 = newK, newX0
         
         y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
         line.set_ydata(y_fit)
