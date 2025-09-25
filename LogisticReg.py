@@ -8,6 +8,8 @@ import sys
 
 datasize, k, x0, data, xs= 0, 0, 0, [], []
 xmax, xmin = 0, 0
+learnrates = open("./LearnRates.txt", 'w+')
+
 def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
     global data, xs
     if (datasize is None):
@@ -78,8 +80,8 @@ def deltax0():
 
 def grad_descent():
     global k, x0
-    learnRateK = 0.00001
-    learnRateX0 = 0.1
+    learnRateK = 0.0001
+    learnRateX0 = 0.001
     dcost = 1
 
     #Creating best-fit line
@@ -106,7 +108,6 @@ def grad_descent():
 
 
     return
-
 
 plt.show(block=False)
 grad_descent()
