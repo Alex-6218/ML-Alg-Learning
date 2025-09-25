@@ -6,10 +6,10 @@ import numpy as np
 import sys
 
 
-k, x0, datasize, data= 1, 0.5, 0, []
+datasize, k, x0, data, xs= 0, 0, 0, [], []
 xmax, xmin = 0, 0
 def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
-    global data
+    global data, xs
     if (datasize is None):
         datasize=int(input("Enter the size of the dataset: "))
     if(truek is None):
@@ -33,10 +33,10 @@ def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
     return data
 
 
-generate_data(40, 0.1, 0, -10, 10)
+generate_data(40, 0.4, 0, -10, 10)
 print(f"Data: {data}")
 
-plt.scatter(np.array([(i/(len(data)-1)*(xmax-xmin)) for i in range(len(data))]), data, label='Random Data Points', color='blue')
+plt.scatter(xs, data, label='Random Data Points', color='blue')
 plt.ion()
 plt.title('Logistic fit to random data')  
 plt.xlabel('X-axis')
@@ -46,8 +46,7 @@ plt.grid(True)
 
 
 def sigmoid(i, k, x0):
-    xterm = (xmin + i/(len(data)-1)*(xmax-xmin))-x0
-    prediction = np.reciprocal(1 + np.exp(-k * xterm))
+    prediction = np.reciprocal(1 + np.exp(-k * (xs[i]-x0)))
     return prediction
 
 
@@ -65,49 +64,34 @@ print("Initial Cost: " + str(initialCost))
 def deltak():
     dk = 0
     for j in range(len(data)):
-        xterm = (xmax + j/(len(data)-1)*(xmax-xmin))-x0
-        dk += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*xterm*np.exp(-k*xterm) #check math
-    return 2*dk/len(data)
+        
+        dk += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*(xs[j]-x0)*np.exp(-k*(xs[j]-x0)) #check math
+    return -2*dk/len(data)
 
 def deltax0():
     dx0 = 0
     for j in range(len(data)):
-        xterm = (xmin + j/(len(data)-1)*(xmax-xmin))
-        dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*xterm) #check math
+        dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*(xs[j]-x0)) #check math
     return 2*dx0/len(data)
 
 def grad_descent():
     global k, x0
-    learn_rate = 0.000001
+    learn_rate = 0.0001
     dcost = 1
 
     #Creating best-fit line
-    y_fit = np.zeros_like(data)
-    for i in range(len(data)):
-        y_fit[i] += sigmoid(i, k, x0)
-    # Sort samplex and y_fit for plotting
-    # sorted_indices = np.argsort(data)
-    # sorted_data = data[sorted_indices]
-    sorted_y_fit = y_fit#[sorted_indices]
-    xs = np.zeros_like(data)
-    xs = data/(datasize-1)
-    line, = plt.plot(xs, sorted_y_fit, label='Best Fit Line', color='orange', linestyle='--')
-    plt.show(block = False)
+    y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
 
+    line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
     while np.abs(dcost) > 1e-6:
-        newk= k-learn_rate*deltak()
-        newx0 = x0-learn_rate*deltax0()
+        newk = k - learn_rate * deltak()
+        newx0 = x0 - learn_rate * deltax0()
         dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newk, newx0) for i in range(len(data))]), data)
         k, x0 = newk, newx0
         
-        #update y values for best fit line
-        y_fit = np.zeros_like(data)
-        for i in range(len(data)):
-            y_fit[i] += sigmoid(i, k, x0)
-        # Sort for plotting
-        sorted_y_fit = y_fit#[sorted_indices]
-        line.set_ydata(sorted_y_fit)
-        plt.pause(0.03)  # This updates the plot
+        y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
+        line.set_ydata(y_fit)
+        plt.pause(0.01)  # This updates the plot
 
         print(f"x0: {x0}")
         print(f"k: {k}")
@@ -123,5 +107,4 @@ def grad_descent():
 
 plt.show(block=False)
 grad_descent()
-input("Finished! Press Enter to end program.")
 plt.show(block=True)
