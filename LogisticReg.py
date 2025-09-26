@@ -35,9 +35,10 @@ def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
     return data
 
 
-generate_data(40, 0.4, 0, -10, 10)
+generate_data(50, .5, 5, -5, 15)
 print(f"Data: {data}")
 
+#set up graph and plot data
 plt.scatter(xs, data, label='Random Data Points', color='blue')
 plt.ion()
 plt.title('Logistic fit to random data')  
@@ -47,48 +48,57 @@ plt.legend()
 plt.grid(True)
 
 
+#calculates prediction value of a logistic best fit line at i index of data and k/x0 values
 def sigmoid(i, k, x0):
     prediction = np.reciprocal(1 + np.exp(-k * (xs[i]-x0)))
-    return prediction
+    return np.clip(prediction, 1e-12, 1-1e-12)
 
 
+#calculates mean squared error for a prediction and target array
 def cost(predictions, targets):
-    mean_squared_error = 0
-    for p, t in zip(predictions, targets):
-        mean_squared_error += (p - t) ** 2
-    return mean_squared_error/len(data)
+    return np.mean((predictions - targets)**2)
 
 
 initialCost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)
 print("Initial Cost: " + str(initialCost))
 
 
+#Partial derivative of cost with respect to k
 def deltak():
     # return 0
     dk = 0
     for j in range(len(data)):
-        
-        dk += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*(xs[j]-x0)*np.exp(-k*(xs[j]-x0)) #check math
-    return -2*dk/len(data)
+        y_hat = sigmoid(j, k, x0)
+        y = data[j]
 
+        dk += (y_hat - y) * y_hat * (1 - y_hat) * (xs[j] - x0)
+ #       dk += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*(xs[j]-x0)*np.exp(-k*(xs[j]-x0)) #check math
+    return 2*dk/len(data)
+
+#Partial derivative of cost with respect to x0
 def deltax0():
     # return 0
     dx0 = 0
     for j in range(len(data)):
-        dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*(xs[j]-x0)) #check math
-    return 2*dx0/len(data)
+        y_hat = sigmoid(j, k, x0)
+        y = data[j]
 
-def grad_descent():
+        dx0 += (y_hat - y) * y_hat * (1 - y_hat) * k
+  #      dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*(xs[j]-x0)) #check math
+    return -2*dx0/len(data)
+
+#perform gradient descent with 
+def grad_descent(): 
     global k, x0
-    learnRateK = 0.00002
-    learnRateX0 = 0.001
+    learnRateK = 0.03
+    learnRateX0 = 0.5
     dcost = 1
-
+    iters = 0
     #Creating best-fit line
     y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
 
     line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
-    while np.abs(dcost) > 1e-4:
+    while np.abs(dcost) > 1e-6 and iters < 1500:
         newK = k - learnRateK * deltak()
         newX0 = x0 - learnRateX0 * deltax0()
         dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newK, newX0) for i in range(len(data))]), data)
@@ -102,9 +112,14 @@ def grad_descent():
         print(f"k: {k}")
         print(f"cost: {str(cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data))}")
         print(f"dCost: {dcost}")
+        print(f"iteration: {iters}")
         sys.stdout.flush()
         if(abs(dcost) > 1e-6):
-            print("\033[{}A".format(4), end='')  # Move cursor up 4 lines
+            print("\033[{}A".format(5), end='')  # Move cursor up 5 lines
+
+        learnRateK *= 0.999
+        learnRateX0 *= 0.999
+        iters += 1
 
 
     return
