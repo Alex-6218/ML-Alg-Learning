@@ -98,7 +98,7 @@ def grad_descent():
     y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
 
     line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
-    while np.abs(dcost) > 1e-6 and iters < 1500:
+    while np.abs(dcost) > 1e-6 and iters < 1000:
         newK = k - learnRateK * deltak()
         newX0 = x0 - learnRateX0 * deltax0()
         dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newK, newX0) for i in range(len(data))]), data)
