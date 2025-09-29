@@ -55,36 +55,13 @@ def sigmoid(i, k, x0):
 
 #calculates mean squared error for a prediction and target array
 def cost(predictions, targets):
-    return np.mean((predictions - targets)**2)
+    return -np.mean((targets*np.log(predictions)+(1-targets)*np.log(1-predictions)))
 
 
 initialCost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)
 print("Initial Cost: " + str(initialCost))
 
-
-#Partial derivative of cost with respect to k
-def deltak():
-    # return 0
-    dk = 0
-    for j in range(len(data)):
-        y_hat = sigmoid(j, k, x0)
-        y = data[j]
-
-        dk += (y_hat - y) * y_hat * (1 - y_hat) * (xs[j] - x0)
-    return 2*dk/len(data)
-
-#Partial derivative of cost with respect to x0
-def deltax0():
-    # return 0
-    dx0 = 0
-    for j in range(len(data)):
-        y_hat = sigmoid(j, k, x0)
-        y = data[j]
-
-        dx0 += (y_hat - y) * y_hat * (1 - y_hat) * k
-    return -2*dx0/len(data)
-
-#perform gradient descent with 
+#perform gradient descent 
 def grad_descent(): 
     global k, x0
     learnRateK = 0.03
@@ -96,8 +73,12 @@ def grad_descent():
 
     line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
     while np.abs(dcost) > 1e-6 and iters < 1000:
-        newK = k - learnRateK * deltak()
-        newX0 = x0 - learnRateX0 * deltax0()
+        err = y_fit - data
+        grad_k = np.mean(err * (xs-x0))
+        grad_x0 = np.mean(err * -k)
+        
+        newK = k - learnRateK * grad_k
+        newX0 = x0 - learnRateX0 * grad_x0
         dcost = cost(np.array([sigmoid(i, k, x0) for i in range(len(data))]), data)-cost(np.array([sigmoid(i, newK, newX0) for i in range(len(data))]), data)
         k, x0 = newK, newX0
         
