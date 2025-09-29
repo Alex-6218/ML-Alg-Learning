@@ -8,7 +8,6 @@ import sys
 
 datasize, k, x0, data, xs= 0, 0, 0, [], []
 xmax, xmin = 0, 0
-learnrates = open("./LearnRates.txt", 'w+')
 
 def generate_data(datasize, truek, truex0, xminInput, xmaxInput):
     global data, xs
