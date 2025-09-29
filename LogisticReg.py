@@ -1,5 +1,3 @@
-#Current Goals: figure out how to strcuture data array, implement generation of that structure using a sigmoid function or other random spread method, 
-# and reimplement sigmoid(), cost(), deltax0(), and deltak() with new structure in mind. 
 
 import matplotlib.pyplot as plt
 import numpy as np
