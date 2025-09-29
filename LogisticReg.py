@@ -65,14 +65,14 @@ print("Initial Cost: " + str(initialCost))
 def grad_descent(): 
     global k, x0
     learnRateK = 0.03
-    learnRateX0 = 0.5
+    learnRateX0 = 0.3
     dcost = 1
     iters = 0 
     #Creating best-fit line
     y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
 
     line, = plt.plot(xs, y_fit, label = "Best fit line", color = "orange", linestyle ="--")
-    while np.abs(dcost) > 1e-6 and iters < 1000:
+    while np.abs(dcost) > 1e-6 and iters < 500:
         err = y_fit - data
         grad_k = np.mean(err * (xs-x0))
         grad_x0 = np.mean(err * -k)
