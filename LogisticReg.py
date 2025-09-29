@@ -72,7 +72,6 @@ def deltak():
         y = data[j]
 
         dk += (y_hat - y) * y_hat * (1 - y_hat) * (xs[j] - x0)
- #       dk += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*(xs[j]-x0)*np.exp(-k*(xs[j]-x0)) #check math
     return 2*dk/len(data)
 
 #Partial derivative of cost with respect to x0
@@ -84,7 +83,6 @@ def deltax0():
         y = data[j]
 
         dx0 += (y_hat - y) * y_hat * (1 - y_hat) * k
-  #      dx0 += (data[j]-sigmoid(j, k, x0))*np.reciprocal(sigmoid(j, k, x0)**2)*k*np.exp(-k*(xs[j]-x0)) #check math
     return -2*dx0/len(data)
 
 #perform gradient descent with 
@@ -93,7 +91,7 @@ def grad_descent():
     learnRateK = 0.03
     learnRateX0 = 0.5
     dcost = 1
-    iters = 0
+    iters = 0 
     #Creating best-fit line
     y_fit = np.array([sigmoid(i, k, x0) for i in range(len(data))])
 
