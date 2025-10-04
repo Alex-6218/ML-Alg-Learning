@@ -54,14 +54,14 @@ def prediction(x, weights):
 def grad_ThetaT(x, y, weights):
     gradient = np.zeros(weights.shape)  # shape (n, K)
     p = prediction(x, weights)
-    gradient += x.T @ (y - p)
+    gradient += x.T @ (p - y)
     return gradient / x.shape[0]
 
 def grad_B(x, y):
     gradient = np.zeros(biasB.shape)  # shape (1, K)
     for i in range(x.shape[0]):
         p = prediction(x[i:i+1, :], weightsT)
-        gradient += (y[i:i+1, :] - p)
+        gradient += (p - y[i:i+1, :])
     return gradient / x.shape[0]
 
 def train():
@@ -71,21 +71,21 @@ def train():
     lr_b, lr_w = 0.01, 0.01 # learning rates for bias and weights
 
     print(f"Number of batches: {num_batches}")
+    d_error = 10
+    prev_err = 0
+    max_epochs = 10
 
     #create minibatches of size 64 and train on each minibatch
-    for i in range(num_batches):
-        minibatch = inputX[64*i:64*(i+1), :]
-        #create corresponding labels for minibatch
-        minibatch_labels = np.zeros((64, K))
-        for l in range(len(minibatch)):
-            minibatchlabel = labelsY[64*i + l, :]
-            minibatch_labels[l, :] = minibatchlabel
+    while abs(d_error) > 1e-7 and epochs < max_epochs:
+        for i in range(num_batches):
+            minibatch = inputX[64*i:64*(i+1), :]
+            #create corresponding labels for minibatch
+            minibatch_labels = np.zeros((64, K))
+            for l in range(len(minibatch)):
+                minibatchlabel = labelsY[64*i + l, :]
+                minibatch_labels[l, :] = minibatchlabel
 
-        d_error = 10
-        prev_err = 0
-        max_iters = 300
-        iters = 0
-        while abs(d_error) > 1e-7 and iters < max_iters:
+
             #calculate error for the minibatch with current weight matrix
             err = 0
             for m in range(len(minibatch)):
@@ -95,40 +95,43 @@ def train():
             err = -err / len(minibatch)
 
             #adjust weight based on gradient
-            weightsT = lr_w * grad_ThetaT(minibatch, minibatch_labels, weightsT)
+            weightsT -= lr_w * grad_ThetaT(minibatch, minibatch_labels, weightsT)
             #adjust bias based on gradient
-            biasB = lr_b * grad_B(minibatch, minibatch_labels)
+            biasB -= lr_b * grad_B(minibatch, minibatch_labels)
             #calculate new error and d_err
-            if iters == 0:
+            if epochs == 0:
                     d_error = err
             else:
                 d_error = err - prev_err
                 prev_err = err
-            iters += 1
 
             print(f"Minibatch {i+1}/{num_batches}: shape {minibatch.shape}, error {err}")
-            print(f"  Iteration {iters}/{max_iters}, d_error: {d_error}")
+            print(f"  Epoch {epochs}/{max_epochs}, d_error: {d_error}")
 
-    #increment epoch, save trained parameters, and randomize data for retraining
-    shuffled_indices = np.random.permutation(len(inputX))
-    inputX = inputX[shuffled_indices]
-    labelsY = labelsY[shuffled_indices]
+        #increment epoch, save trained parameters, and randomize data for retraining
+        shuffled_indices = np.random.permutation(len(inputX))
+        inputX = inputX[shuffled_indices]
+        labelsY = labelsY[shuffled_indices]
 
-    np.savez("softmax_params.npz", Theta=weightsT, b=biasB)
-    epochs += 1
-    continue_training = input(f"Epoch {epochs} complete! Press Enter to continue training, or type 'stop' to end: ").strip().lower()
-    if continue_training != 'stop':
-        train()
-        choice = ''
+        np.savez("softmax_params.npz", Theta=weightsT, b=biasB)
+    #     continue_training = input(f"Epoch {epochs} complete! Press Enter to continue training, or type 'stop' to end: ").strip().lower()
+    # if continue_training != 'stop':
+    #     train()
+        epochs += 1
+    #     choice = ''
 if choice == 't':
     train()
 else:
-    print("Please provide a test file path: ")
-    test_file = input().strip()
-    if not os.path.isfile(test_file):
-        print(f"File {test_file} does not exist.")
-        
+    print("Please provide a test image number (between 1 and 28000): ")
+    test_image_number = input().strip()
+    if not test_image_number.isdigit():
+        print(f"Invalid input: {test_image_number} is not a number.")
     else:
+        test_image_number = int(test_image_number)
+        test_file = f"./MNIST_Data/testSet/testSet/img_{test_image_number}.jpg"
+        if not os.path.isfile(test_file):
+            print(f"File not found: {test_file}")
+            sys.exit(1)
         img = Image.open(test_file).convert("L")  # grayscale
         img = img.resize((28,28))                 # force 28x28 if needed
         arr = np.array(img).astype(np.float32) / 255.0
