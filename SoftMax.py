@@ -8,10 +8,10 @@ test_file = ''
 K = 10
 n = 784
 
-
 inputX = np.zeros((1, n))   
 labelsY = np.zeros((1, K))
 weightsT = np.zeros((n, K))
+biasB = np.zeros((1, K))
 
 def load_images_from_folder(folder, img_size=(28,28)):
     data, labels = [], []
@@ -39,8 +39,10 @@ for var, val in [('inputX', inputX), ('labelsY', labelsY)]:
 
 
 def prediction(x, weights):
-    predictions = []
-    return predictions
+    #create logits
+    logitsZ = np.cross(weights, x) + biasB # shape (m, K)
+    predictions = np.array([np.exp(logitsZ[logit, :]) for logit in range(logitsZ.shape[0])])
+    return predictions / np.sum(predictions)  # shape (K,)
 
 def train():
     global inputX, labelsY, weightsT
