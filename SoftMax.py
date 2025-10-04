@@ -104,6 +104,7 @@ def train():
         np.savez("softmax_params.npz", Theta=weightsT, b=biasB)
         epoch_loss += batch_loss
         epochs += 1
+
 if choice == 't':
     train()
 else:
