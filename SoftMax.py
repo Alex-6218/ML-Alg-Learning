@@ -59,24 +59,23 @@ def grad_ThetaT(x, y, weights):
 
 def grad_B(x, y):
     gradient = np.zeros(biasB.shape)  # shape (1, K)
-    for i in range(x.shape[0]):
-        p = prediction(x[i:i+1, :], weightsT)
-        gradient += (p - y[i:i+1, :])
-    return gradient / x.shape[0]
+    p = prediction(x, weightsT)                  # shape (m, K)
+    gradient = np.mean(p - y, axis=0, keepdims=True)  # shape (1, K)
+
+    return gradient
 
 def train():
     global inputX, labelsY, weightsT, biasB, epochs, choice
     #calculate number of batches to make
     num_batches = inputX.shape[0] // 64
-    lr_b, lr_w = 0.01, 0.01 # learning rates for bias and weights
+    lr = 0.06 # learning rates for bias and weights
 
     print(f"Number of batches: {num_batches}")
-    d_error = 10
-    prev_err = 0
+    epoch_loss = 0
     max_epochs = 10
 
     #create minibatches of size 64 and train on each minibatch
-    while abs(d_error) > 1e-7 and epochs < max_epochs:
+    while epochs < max_epochs:
         for i in range(num_batches):
             minibatch = inputX[64*i:64*(i+1), :]
             #create corresponding labels for minibatch
@@ -87,38 +86,24 @@ def train():
 
 
             #calculate error for the minibatch with current weight matrix
-            err = 0
-            for m in range(len(minibatch)):
-                for k in range(K):
-                    if minibatch_labels[m, k] == 1:
-                        err += minibatch_labels[m, k] * np.log(prediction(minibatch, weightsT)[m, k])
-            err = -err / len(minibatch)
-
+            p = prediction(minibatch, weightsT)
+            batch_loss = -np.mean(np.sum(minibatch_labels * np.log(p + 1e-12), axis=1))
             #adjust weight based on gradient
-            weightsT -= lr_w * grad_ThetaT(minibatch, minibatch_labels, weightsT)
+            weightsT -= lr * grad_ThetaT(minibatch, minibatch_labels, weightsT)
             #adjust bias based on gradient
-            biasB -= lr_b * grad_B(minibatch, minibatch_labels)
-            #calculate new error and d_err
-            if epochs == 0:
-                    d_error = err
-            else:
-                d_error = err - prev_err
-                prev_err = err
-
-            print(f"Minibatch {i+1}/{num_batches}: shape {minibatch.shape}, error {err}")
-            print(f"  Epoch {epochs}/{max_epochs}, d_error: {d_error}")
+            biasB -= lr * grad_B(minibatch, minibatch_labels)
+            print(f"Minibatch {i+1}/{num_batches}: shape {minibatch.shape}, batch loss {batch_loss}")
+            print(f"  Epoch {epochs}/{max_epochs}, epoch loss: {epoch_loss}")
 
         #increment epoch, save trained parameters, and randomize data for retraining
         shuffled_indices = np.random.permutation(len(inputX))
         inputX = inputX[shuffled_indices]
         labelsY = labelsY[shuffled_indices]
+        
 
         np.savez("softmax_params.npz", Theta=weightsT, b=biasB)
-    #     continue_training = input(f"Epoch {epochs} complete! Press Enter to continue training, or type 'stop' to end: ").strip().lower()
-    # if continue_training != 'stop':
-    #     train()
+        epoch_loss += batch_loss
         epochs += 1
-    #     choice = ''
 if choice == 't':
     train()
 else:
