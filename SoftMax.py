@@ -37,7 +37,7 @@ def load_images_from_folder(folder, img_size=(28,28)):
                 labels.append(label_one_hot)
     return np.array(data), np.array(labels)
 
-choice = input("Test or Train? (t/T for train, anything else for test): ").strip().lower()
+choice = input("Press Enter for test or 't' for train: ").strip().lower()
 if choice == 't':
     weightsT = np.random.randn(n, K) * 0.01  # small random values
     biasB = np.zeros((1, K))                 # initialize biases to zero
