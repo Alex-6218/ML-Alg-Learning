@@ -16,7 +16,8 @@ if os.path.isfile("softmax_params.npz"):
     weightsT = params["Theta"]
     biasB = params["b"]
 
-
+#Load images from the training set folder and modifying them as necessary for use in training
+# this was the weirdest part of this project for me lol
 def load_images_from_folder(folder, img_size=(28,28)):
     data, labels = [], []
     for label in range(K):
@@ -37,6 +38,7 @@ def load_images_from_folder(folder, img_size=(28,28)):
                 labels.append(label_one_hot)
     return np.array(data), np.array(labels)
 
+#user input to determine if they want to train or test
 choice = input("Press Enter for test or 't' for train: ").strip().lower()
 if choice == 't':
     weightsT = np.random.randn(n, K) * 0.01  # small random values
@@ -48,20 +50,19 @@ if choice == 't':
 def prediction(x, weights):
     #create logits
     logitsZ = x @ weights + biasB # shape (m, K)
-    predictions = np.array([np.clip(np.exp(logitsZ[logit, :] - np.max(logitsZ[logit, :])), 0, None) for logit in range(logitsZ.shape[0])])
+    predictions = np.array([np.clip(np.exp(logitsZ[logit, :] - np.max(logitsZ[logit, :])), 0, None) for logit in range(logitsZ.shape[0])]) #Softmax logits to get prediction vector of shape (m, K)
     return predictions / np.sum(predictions, axis=1, keepdims=True)  # shape (m, K)
 
 def grad_ThetaT(x, y, weights):
     gradient = np.zeros(weights.shape)  # shape (n, K)
     p = prediction(x, weights)
-    gradient += x.T @ (p - y)
-    return gradient / x.shape[0]
+    gradient += x.T @ (p - y) # cross multiply images by difference of prediction and label, gives shape (n, K)
+    return gradient / x.shape[0] # average over all m examples
 
 def grad_B(x, y):
     gradient = np.zeros(biasB.shape)  # shape (1, K)
     p = prediction(x, weightsT)                  # shape (m, K)
     gradient = np.mean(p - y, axis=0, keepdims=True)  # shape (1, K)
-
     return gradient
 
 def train():
@@ -105,6 +106,8 @@ def train():
         epoch_loss += batch_loss
         epochs += 1
 
+#handle testing and displaying results
+#this was like 70 percent ai generated lol sorry guys
 if choice == 't':
     train()
 else:
